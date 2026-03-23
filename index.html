@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MPL — My Private Life</title>
+<title>My Private Life</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
@@ -569,11 +569,90 @@
     border-color: var(--accent);
   }
 
+  /* ── GALLERY ── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .gallery-item {
+    position: relative; border-radius: 8px; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    box-shadow: var(--shadow); cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .gallery-item:hover { box-shadow: var(--shadow2); transform: translateY(-2px); }
+
+  .gallery-item img {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;
+  }
+
+  .gallery-item-info {
+    padding: 10px 12px;
+  }
+
+  .gallery-item-name {
+    font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px;
+  }
+
+  .gallery-item-date {
+    font-size: 11px; color: var(--text3);
+  }
+
+  .gallery-item-caption {
+    font-size: 11px; color: var(--text2); margin-top: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* 사진 첨부 행 */
+  .history-photo-row {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .history-photo-thumb {
+    width: 60px; height: 60px; border-radius: 6px; object-fit: cover;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .history-photo-thumb:hover { opacity: 0.8; }
+
+  /* 라이트박스 */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+
+  .lightbox.show { opacity: 1; pointer-events: all; }
+
+  .lightbox img {
+    max-width: 90vw; max-height: 85vh; border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  .lightbox-info {
+    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6); color: white; padding: 8px 20px;
+    border-radius: 20px; font-size: 13px; text-align: center;
+    white-space: nowrap;
+  }
+
+  .lightbox-close {
+    position: absolute; top: 20px; right: 24px;
+    background: rgba(255,255,255,0.15); border: none; color: white;
+    font-size: 22px; width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .lightbox-close:hover { background: rgba(255,255,255,0.3); }
+
   @media (max-width: 768px) {
-    .content { padding: 20px 16px 60px; }
-    .topbar { padding: 0 14px; gap: 12px; }
-    .topbar-brand { display: none; }
-    .field-row { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
   }
 </style>
 </head>
@@ -582,7 +661,7 @@
 <!-- LOCK SCREEN -->
 <div id="lockScreen">
   <div class="lock-badge">Private · Confidential</div>
-  <div class="lock-title">MPL — <span>My Private</span> Life</div>
+  <div class="lock-title">My <span>Private</span> Life</div>
   <div class="lock-divider"></div>
   <div class="pin-display" id="pinDisplay">
     <div class="pin-dot" id="d0"></div>
@@ -610,13 +689,14 @@
 <!-- MAIN APP -->
 <div id="mainApp">
   <div class="topbar">
-    <div class="topbar-brand">MPL — My Private Life</div>
+    <div class="topbar-brand">My Private Life</div>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="showSection('overview', this)">Overview</button>
       <button class="nav-btn" onclick="showSection('playbook', this)">Playbook</button>
       <button class="nav-btn" onclick="showSection('channels', this)">Channels</button>
       <button class="nav-btn" onclick="showSection('checklist', this)">Checklist</button>
       <button class="nav-btn" onclick="showSection('people', this)">People</button>
+      <button class="nav-btn" onclick="showSection('gallery', this)">Gallery</button>
       <button class="nav-btn" onclick="showSection('notes', this)">Notes</button>
       <button class="nav-btn" onclick="showSection('settings', this)">Settings</button>
     </nav>
@@ -805,6 +885,19 @@
       <div class="people-list" id="peopleList">
         <div style="color:var(--text3); font-size:13px; padding: 20px 0; text-align:center;">
           아직 등록된 인물이 없습니다. 위의 버튼으로 추가하세요.
+        </div>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="section" id="section-gallery">
+      <div class="section-header">
+        <div class="section-label">Memories</div>
+        <div class="section-title">전체 갤러리</div>
+      </div>
+      <div id="galleryGrid" class="gallery-grid">
+        <div style="color:var(--text3);font-size:13px;padding:40px 0;text-align:center;grid-column:1/-1;">
+          People 탭에서 히스토리에 사진을 추가하면 여기에 모입니다.
         </div>
       </div>
     </div>
@@ -1005,6 +1098,7 @@ function loadPeople() {
   const saved = localStorage.getItem('people_v2');
   if (saved) people = JSON.parse(saved);
   renderPeople();
+  renderGallery();
 }
 
 function openAddModal() {
@@ -1248,15 +1342,46 @@ function renderPeople(query = '') {
 
         <!-- ⑥ 관계 히스토리 -->
         <div class="person-section">
-          <div class="person-section-title">⑥ 관계 히스토리</div>
+          <div class="person-section-title">⑥ 관계 히스토리 &amp; 사진</div>
           <div class="history-log">
             ${p.history.length === 0
               ? '<div style="color:var(--text3);font-size:12px;padding:8px 0;">기록 없음</div>'
               : p.history.map(h => `
-                <div class="history-item">
-                  <div class="history-date">${escHtml(h.date)}</div>
-                  <div class="history-content">${escHtml(h.content)}</div>
-                  <button class="history-del" onclick="deleteHistory(${p.id},${h.id})">×</button>
+                <div class="history-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
+                  <div style="display:flex;width:100%;gap:8px;align-items:flex-start;">
+                    <div class="history-date">${escHtml(h.date)}</div>
+                    <div class="history-content">${escHtml(h.content)}</div>
+                    <button class="history-del" onclick="deleteHistory(${p.id},${h.id})">×</button>
+                  </div>
+                  ${(h.photos && h.photos.length > 0) ? `
+                  <div class="history-photo-row">
+                    ${h.photos.map((ph, idx) => `
+                      <div style="position:relative;display:inline-block;">
+                        <img class="history-photo-thumb" src="${ph.src}" title="${escHtml(ph.caption||'')}"
+                          onclick="openLightbox('${ph.src}','${escHtml(p.name)} · ${escHtml(h.date)}','${escHtml(ph.caption||'')}')" />
+                        <button onclick="deleteHistoryPhoto(${p.id},${h.id},${idx})"
+                          style="position:absolute;top:-4px;right:-4px;background:var(--danger);color:white;border:none;
+                          border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;display:flex;
+                          align-items:center;justify-content:center;line-height:1;">×</button>
+                      </div>`).join('')}
+                    <label style="cursor:pointer;display:flex;align-items:center;justify-content:center;
+                      width:60px;height:60px;border:1.5px dashed var(--border2);border-radius:6px;
+                      color:var(--text3);font-size:20px;transition:all 0.15s;"
+                      title="사진 추가">
+                      +
+                      <input type="file" accept="image/*" style="display:none"
+                        onchange="addHistoryPhoto(${p.id},${h.id},this)" />
+                    </label>
+                  </div>` : `
+                  <div class="history-photo-row">
+                    <label style="cursor:pointer;display:flex;align-items:center;justify-content:center;
+                      width:60px;height:60px;border:1.5px dashed var(--border2);border-radius:6px;
+                      color:var(--text3);font-size:20px;" title="사진 추가">
+                      +
+                      <input type="file" accept="image/*" style="display:none"
+                        onchange="addHistoryPhoto(${p.id},${h.id},this)" />
+                    </label>
+                  </div>`}
                 </div>`).join('')}
           </div>
           <div class="add-history-row">
@@ -1282,8 +1407,83 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── INIT ──
-function loadAll() { loadNotes(); loadChecklist(); loadPeople(); }
+// ── GALLERY ──
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
+  const allPhotos = [];
+  people.forEach(p => {
+    (p.history || []).forEach(h => {
+      (h.photos || []).forEach(ph => {
+        allPhotos.push({ src: ph.src, caption: ph.caption || '', date: h.date, personName: p.name, pid: p.id, hid: h.id });
+      });
+    });
+  });
+
+  if (allPhotos.length === 0) {
+    grid.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:40px 0;text-align:center;grid-column:1/-1;">
+      People 탭에서 히스토리에 사진을 추가하면 여기에 모입니다.</div>`;
+    return;
+  }
+
+  grid.innerHTML = allPhotos.map((ph, i) => `
+    <div class="gallery-item" onclick="openLightbox('${escHtml(ph.src)}','${escHtml(ph.personName)} · ${escHtml(ph.date)}','${escHtml(ph.caption)}')">
+      <img src="${escHtml(ph.src)}" alt="" loading="lazy" />
+      <div class="gallery-item-info">
+        <div class="gallery-item-name">${escHtml(ph.personName)}</div>
+        <div class="gallery-item-date">${escHtml(ph.date)}</div>
+        ${ph.caption ? `<div class="gallery-item-caption">${escHtml(ph.caption)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openLightbox(src, title, caption) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lbInfo').textContent = caption ? `${title} — ${caption}` : title;
+  lb.classList.add('show');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+// ── 히스토리에 사진 추가 ──
+function addHistoryPhoto(pid, hid, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = people.find(p => p.id === pid);
+    const h = p && p.history.find(h => h.id === hid);
+    if (!h) return;
+    if (!h.photos) h.photos = [];
+    const caption = prompt('사진 설명을 입력하세요 (선택)') || '';
+    h.photos.push({ src: e.target.result, caption, addedAt: Date.now() });
+    savePeople();
+    renderPeople(document.getElementById('peopleSearch').value.toLowerCase());
+    renderGallery();
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteHistoryPhoto(pid, hid, idx) {
+  const p = people.find(p => p.id === pid);
+  const h = p && p.history.find(h => h.id === hid);
+  if (!h || !h.photos) return;
+  h.photos.splice(idx, 1);
+  savePeople();
+  renderPeople(document.getElementById('peopleSearch').value.toLowerCase());
+  renderGallery();
+}
+
 </script>
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lbImg" src="" alt="" onclick="event.stopPropagation()" />
+  <div class="lightbox-info" id="lbInfo"></div>
+</div>
+
 </body>
 </html>
